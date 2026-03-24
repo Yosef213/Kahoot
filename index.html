@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تحدي المعلومات ⚡</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #0b0c18;
+  --surface:  #13152a;
+  --border:   #ffffff18;
+  --cyan:     #00e5ff;
+  --magenta:  #ff2d78;
+  --gold:     #ffd166;
+  --green:    #06d6a0;
+  --text:     #e8eaf0;
+  --muted:    #7b83a6;
+  --r:  #e8003d;
+  --b:  #1056d1;
+  --y:  #d4a000;
+  --g:  #1aa34a;
+  --r-dark: #8c0025;
+  --b-dark: #083180;
+  --y-dark: #806100;
+  --g-dark: #0e6030;
+  --radius: 18px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Tajawal', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  overflow-x: hidden;
+}
+
+/* Animated starfield background */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 10% 20%, #ffffff44, transparent),
+    radial-gradient(1px 1px at 30% 70%, #ffffff33, transparent),
+    radial-gradient(1px 1px at 60% 15%, #ffffff55, transparent),
+    radial-gradient(1px 1px at 80% 85%, #ffffff22, transparent),
+    radial-gradient(1px 1px at 50% 50%, #ffffff44, transparent),
+    radial-gradient(1px 1px at 90% 40%, #ffffff33, transparent),
+    radial-gradient(2px 2px at 20% 90%, var(--cyan)33, transparent),
+    radial-gradient(2px 2px at 70% 30%, var(--magenta)22, transparent);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  padding: 40px 36px;
+  width: 100%;
+  max-width: 860px;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 0 80px #00e5ff10, 0 30px 60px #00000080;
+}
+
+.hidden { display: none !important; }
+
+/* ───────────── LOGO ───────────── */
+.logo {
+  text-align: center;
+  margin-bottom: 36px;
+}
+.logo-title {
+  font-size: clamp(32px, 6vw, 52px);
+  font-weight: 900;
+  letter-spacing: -1px;
+  background: linear-gradient(135deg, var(--cyan), var(--magenta));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.1;
+}
+.logo-sub {
+  color: var(--muted);
+  font-size: 15px;
+  margin-top: 6px;
+}
+
+/* ───────────── INPUTS ───────────── */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+input {
+  font-family: 'Tajawal', sans-serif;
+  background: #ffffff0d;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 18px;
+  font-size: 18px;
+  color: var(--text);
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+  width: 100%;
+  text-align: right;
+}
+input:focus {
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 4px #00e5ff15;
+}
+input::placeholder { color: var(--muted); }
+
+/* ───────────── BUTTONS ───────────── */
+.btn {
+  font-family: 'Tajawal', sans-serif;
+  font-weight: 900;
+  font-size: 18px;
+  border: none;
+  border-radius: 14px;
+  padding: 16px 28px;
+  cursor: pointer;
+  width: 100%;
+  transition: transform .1s, box-shadow .1s, opacity .2s;
+  position: relative;
+  overflow: hidden;
+}
+.btn:active { transform: translateY(4px); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--cyan), #0090ff);
+  color: #000;
+  box-shadow: 0 6px 0 #007ab0, 0 0 30px #00e5ff30;
+}
+.btn-primary:active { box-shadow: 0 0px 0 #007ab0; }
+
+.btn-secondary {
+  background: linear-gradient(135deg, var(--magenta), #c400a5);
+  color: #fff;
+  box-shadow: 0 6px 0 #8c0060;
+}
+.btn-secondary:active { box-shadow: 0 0px 0 #8c0060; }
+
+.btn-success {
+  background: linear-gradient(135deg, var(--green), #04b389);
+  color: #000;
+  box-shadow: 0 6px 0 #038866;
+}
+.btn-success:active { box-shadow: 0 0px 0 #038866; }
+
+.btn-gold {
+  background: linear-gradient(135deg, var(--gold), #f0a500);
+  color: #000;
+  box-shadow: 0 6px 0 #a07000;
+}
+.btn-gold:active { box-shadow: 0 0px 0 #a07000; }
+
+/* ───────────── DIVIDER ───────────── */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 28px 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+.divider::before, .divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ───────────── LOBBY ───────────── */
+#lobby-screen .room-code-box {
+  background: #ffffff08;
+  border: 2px dashed var(--cyan)66;
+  border-radius: 20px;
+  padding: 24px;
+  text-align: center;
+  margin-bottom: 28px;
+}
+.room-code-label { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+.room-code-number {
+  font-size: clamp(48px, 10vw, 72px);
+  font-weight: 900;
+  letter-spacing: 8px;
+  color: var(--cyan);
+  text-shadow: 0 0 40px var(--cyan);
+  line-height: 1;
+}
+
+.waiting-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff08;
+  border-radius: 12px;
+  padding: 12px 18px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.pulse-dot {
+  width: 10px; height: 10px;
+  background: var(--green);
+  border-radius: 50%;
+  animation: pulse-dot 1.4s infinite;
+  box-shadow: 0 0 10px var(--green);
+}
+@keyframes pulse-dot {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: .4; transform: scale(.7); }
+}
+
+#lobby-players {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+  margin-bottom: 24px;
+}
+#lobby-players li {
+  background: #ffffff0a;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 15px;
+  animation: pop-in .3s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes pop-in {
+  from { transform: scale(.6); opacity: 0; }
+  to   { transform: scale(1);  opacity: 1; }
+}
+.host-badge {
+  font-size: 11px;
+  color: var(--gold);
+  display: block;
+  margin-top: 4px;
+}
+
+/* ───────────── GAME LAYOUT ───────────── */
+#game-screen .inner {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+#trivia-zone { flex: 2; min-width: 0; }
+#leaderboard-zone {
+  flex: 0 0 220px;
+  background: #ffffff07;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 20px 16px;
+}
+
+/* ───────────── PROGRESS ───────────── */
+.progress-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.category-badge {
+  background: var(--magenta)22;
+  border: 1px solid var(--magenta)55;
+  color: var(--magenta);
+  border-radius: 999px;
+  padding: 3px 12px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* ───────────── TIMER BAR ───────────── */
+.timer-wrap {
+  position: relative;
+  height: 14px;
+  background: #ffffff10;
+  border-radius: 99px;
+  overflow: hidden;
+  margin-bottom: 18px;
+}
+#timer-bar {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, var(--green), var(--cyan));
+  border-radius: 99px;
+  transition: width .9s linear, background .5s;
+}
+#timer-bar.danger { background: linear-gradient(90deg, var(--r), var(--magenta)); }
+#timer-count {
+  position: absolute;
+  right: 10px; top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px;
+  font-weight: 900;
+  color: #fff;
+}
+
+/* ───────────── QUESTION ───────────── */
+#question-text {
+  font-size: clamp(20px, 3.5vw, 28px);
+  font-weight: 700;
+  line-height: 1.5;
+  margin-bottom: 22px;
+  min-height: 80px;
+  transition: opacity .3s;
+}
+
+/* ───────────── ANSWER GRID ───────────── */
+#answer-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.answer-btn {
+  font-family: 'Tajawal', sans-serif;
+  font-size: clamp(16px, 2.5vw, 20px);
+  font-weight: 900;
+  color: #fff;
+  border: none;
+  border-radius: 16px;
+  padding: 22px 16px;
+  cursor: pointer;
+  transition: transform .12s, box-shadow .12s, opacity .3s;
+  line-height: 1.3;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.answer-btn::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: #ffffff20;
+  opacity: 0;
+  transition: opacity .15s;
+}
+.answer-btn:hover:not(:disabled)::before { opacity: 1; }
+.answer-btn:active:not(:disabled) { transform: scale(.96); }
+.answer-btn:disabled { cursor: not-allowed; }
+
+#btn-0 { background: var(--r); box-shadow: 0 6px 0 var(--r-dark); }
+#btn-1 { background: var(--b); box-shadow: 0 6px 0 var(--b-dark); }
+#btn-2 { background: var(--y); box-shadow: 0 6px 0 var(--y-dark); }
+#btn-3 { background: var(--g); box-shadow: 0 6px 0 var(--g-dark); }
+
+#btn-0:active { box-shadow: 0 0px 0 var(--r-dark); transform: translateY(6px); }
+#btn-1:active { box-shadow: 0 0px 0 var(--b-dark); transform: translateY(6px); }
+#btn-2:active { box-shadow: 0 0px 0 var(--y-dark); transform: translateY(6px); }
+#btn-3:active { box-shadow: 0 0px 0 var(--g-dark); transform: translateY(6px); }
+
+.answer-btn.correct {
+  background: var(--green) !important;
+  box-shadow: 0 0 30px var(--green) !important;
+  animation: correct-flash .4s;
+}
+.answer-btn.wrong { opacity: .35; }
+
+@keyframes correct-flash {
+  0%,100% { transform: scale(1); }
+  50%  { transform: scale(1.05); }
+}
+
+/* ───────────── STATUS / FEEDBACK ───────────── */
+#status-box {
+  border-radius: 14px;
+  padding: 16px 20px;
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 16px;
+  animation: fade-in .3s;
+}
+#status-box.correct-bg { background: var(--green)22; border: 1px solid var(--green)55; color: var(--green); }
+#status-box.wrong-bg   { background: var(--r)22;     border: 1px solid var(--r)55;     color: #ff6688; }
+#status-box.info-bg    { background: var(--cyan)15;  border: 1px solid var(--cyan)33;  color: var(--cyan); }
+
+@keyframes fade-in { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform: none; } }
+
+/* ───────────── POINTS POP ───────────── */
+#points-pop {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  font-size: 60px;
+  font-weight: 900;
+  color: var(--gold);
+  text-shadow: 0 0 40px var(--gold);
+  pointer-events: none;
+  z-index: 999;
+  transition: none;
+}
+#points-pop.show {
+  animation: points-fly 1.2s cubic-bezier(.22,.61,.36,1) forwards;
+}
+@keyframes points-fly {
+  0%  { transform: translate(-50%, -50%) scale(0);   opacity: 1; }
+  40% { transform: translate(-50%, -80%) scale(1.2); opacity: 1; }
+  100%{ transform: translate(-50%,-130%) scale(.9);  opacity: 0; }
+}
+
+/* ───────────── ANSWER PROGRESS ───────────── */
+#answer-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+#progress-dots { display: flex; gap: 6px; }
+.dot {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: background .3s;
+}
+.dot.filled { background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
+
+/* ───────────── STREAK ───────────── */
+#streak-display {
+  text-align: center;
+  margin-bottom: 14px;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  min-height: 36px;
+  transition: opacity .3s;
+}
+
+/* ───────────── LEADERBOARD ───────────── */
+#leaderboard-zone h3 {
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--gold);
+  margin-bottom: 14px;
+  text-align: center;
+  letter-spacing: 1px;
+}
+#live-leaderboard {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+#live-leaderboard li {
+  background: #ffffff08;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  transition: background .3s;
+  animation: pop-in .3s cubic-bezier(.34,1.56,.64,1);
+}
+#live-leaderboard li:first-child {
+  background: var(--gold)18;
+  border-color: var(--gold)44;
+}
+.lb-rank { color: var(--muted); font-size: 13px; min-width: 20px; }
+.lb-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lb-score { color: var(--cyan); font-weight: 900; font-size: 13px; white-space: nowrap; }
+.lb-streak { font-size: 13px; }
+
+/* ───────────── GAME OVER ───────────── */
+#game-over-screen {
+  text-align: center;
+}
+.winner-crown {
+  font-size: 72px;
+  animation: bounce 1s infinite;
+  display: block;
+  margin-bottom: 8px;
+}
+@keyframes bounce {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+.winner-name {
+  font-size: clamp(28px, 5vw, 42px);
+  font-weight: 900;
+  color: var(--gold);
+  text-shadow: 0 0 30px var(--gold);
+  margin-bottom: 28px;
+}
+#final-leaderboard {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 380px;
+  margin: 0 auto 28px;
+}
+#final-leaderboard li {
+  background: #ffffff08;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 700;
+  animation: pop-in .4s cubic-bezier(.34,1.56,.64,1) both;
+}
+#final-leaderboard li:nth-child(1) { animation-delay: .0s; background: #ffd16622; border-color: var(--gold)55; }
+#final-leaderboard li:nth-child(2) { animation-delay: .1s; }
+#final-leaderboard li:nth-child(3) { animation-delay: .2s; }
+#final-leaderboard li:nth-child(4) { animation-delay: .3s; }
+.medal { font-size: 22px; min-width: 32px; }
+.final-score { color: var(--cyan); }
+
+/* ───────────── RESPONSIVE ───────────── */
+@media (max-width: 620px) {
+  .card { padding: 24px 18px; border-radius: 20px; }
+  #game-screen .inner { flex-direction: column; }
+  #leaderboard-zone { flex: none; width: 100%; }
+  #answer-grid { grid-template-columns: 1fr; }
+  .answer-btn { padding: 18px 16px; }
+}
+
+/* ───────────── MISC ───────────── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.mt-12 { margin-top: 12px; }
+.mt-20 { margin-top: 20px; }
+.center { text-align: center; }
+</style>
+</head>
+<body>
+
+<div id="points-pop"></div>
+
+<div class="card">
+
+  <!-- ══════════════ MAIN MENU ══════════════ -->
+  <div id="main-menu">
+    <div class="logo">
+      <div class="logo-title">⚡ تحدي المعلومات</div>
+      <div class="logo-sub">العب مع أصدقائك في الوقت الفعلي</div>
+    </div>
+
+    <div class="field">
+      <label>اسمك</label>
+      <input type="text" id="player-name" placeholder="أدخل اسمك..." maxlength="20">
+    </div>
+
+    <div class="grid-2">
+      <button class="btn btn-primary" id="btn-create">إنشاء غرفة ➕</button>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <input type="text" id="join-code" placeholder="رمز الغرفة" maxlength="4"
+               style="text-align:center; font-size:22px; letter-spacing:6px;">
+        <button class="btn btn-secondary" id="btn-join">انضمام 🚀</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ LOBBY ══════════════ -->
+  <div id="lobby-screen" class="hidden">
+    <div class="room-code-box">
+      <div class="room-code-label">رمز الغرفة</div>
+      <div class="room-code-number" id="display-code">----</div>
+      <div style="font-size:13px; color:var(--muted); margin-top:6px;">أرسل هذا الرمز لأصدقائك</div>
+    </div>
+
+    <div class="waiting-bar">
+      <span>في انتظار اللاعبين...</span>
+      <div class="pulse-dot"></div>
+    </div>
+
+    <ul id="lobby-players"></ul>
+
+    <button class="btn btn-success hidden" id="btn-start">▶ ابدأ اللعبة!</button>
+    <div id="waiting-msg" class="center" style="color:var(--muted); font-size:15px; margin-top:12px;">
+      في انتظار المضيف لبدء اللعبة...
+    </div>
+  </div>
+
+  <!-- ══════════════ GAME ══════════════ -->
+  <div id="game-screen" class="hidden">
+    <div class="inner">
+      <div id="trivia-zone">
+
+        <div class="progress-row">
+          <span id="q-counter" style="font-weight:700;">سؤال ١/١٠</span>
+          <span class="category-badge" id="q-category">عام</span>
+        </div>
+
+        <div class="timer-wrap">
+          <div id="timer-bar"></div>
+          <span id="timer-count">15</span>
+        </div>
+
+        <div id="streak-display"></div>
+
+        <div id="question-text">جاري التحميل...</div>
+
+        <div id="answer-grid" class="hidden">
+          <button class="answer-btn" id="btn-0"></button>
+          <button class="answer-btn" id="btn-1"></button>
+          <button class="answer-btn" id="btn-2"></button>
+          <button class="answer-btn" id="btn-3"></button>
+        </div>
+
+        <div id="status-box" class="hidden"></div>
+
+        <div id="answer-progress" class="hidden">
+          <span id="progress-text">أجاب ٠/٠</span>
+          <div id="progress-dots"></div>
+        </div>
+
+        <button class="btn btn-gold mt-12 hidden" id="btn-next">السؤال التالي ⏭</button>
+      </div>
+
+      <div id="leaderboard-zone">
+        <h3>🏆 الصدارة</h3>
+        <ul id="live-leaderboard"></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ GAME OVER ══════════════ -->
+  <div id="game-over-screen" class="hidden">
+    <span class="winner-crown">👑</span>
+    <div class="winner-name" id="winner-name">الفائز!</div>
+    <ul id="final-leaderboard"></ul>
+    <button class="btn btn-primary" id="btn-play-again" style="max-width:280px; margin:0 auto; display:block;">
+      العب مرة أخرى 🔄
+    </button>
+  </div>
+
+</div><!-- /card -->
+
+<script>
+// ══════════════════════════════════════════════
+//  WEB AUDIO — sound effects (no files needed)
+// ══════════════════════════════════════════════
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let ctx;
+function getCtx() {
+  if (!ctx) ctx = new AudioCtx();
+  return ctx;
+}
+
+function playTone(freq, dur, type = 'square', gain = 0.18) {
+  try {
+    const a = getCtx();
+    const osc = a.createOscillator();
+    const g = a.createGain();
+    osc.connect(g); g.connect(a.destination);
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, a.currentTime);
+    g.gain.setValueAtTime(gain, a.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, a.currentTime + dur);
+    osc.start(); osc.stop(a.currentTime + dur);
+  } catch(e) {}
+}
+
+function sfxCorrect() {
+  playTone(523, .12, 'sine', .2);
+  setTimeout(() => playTone(659, .12, 'sine', .2), 100);
+  setTimeout(() => playTone(784, .25, 'sine', .22), 200);
+}
+function sfxWrong() {
+  playTone(200, .35, 'sawtooth', .15);
+  setTimeout(() => playTone(150, .35, 'sawtooth', .12), 100);
+}
+function sfxTick() {
+  playTone(880, .06, 'square', .06);
+}
+function sfxJoin() {
+  playTone(440, .1, 'sine', .12);
+  setTimeout(() => playTone(550, .15, 'sine', .12), 80);
+}
+function sfxGameOver() {
+  [523,659,784,1046].forEach((f,i) => setTimeout(() => playTone(f, .3, 'sine', .2), i*120));
+}
+
+// ══════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════
+let ws;
+let myRoomCode = '';
+let isHost = false;
+let myName = '';
+let countdownInterval;
+let currentTimerMax = 15;
+let myStreak = 0;
+let totalPlayers = 1;
+
+// ══════════════════════════════════════════════
+//  DOM REFS
+// ══════════════════════════════════════════════
+const screens = {
+  menu:     document.getElementById('main-menu'),
+  lobby:    document.getElementById('lobby-screen'),
+  game:     document.getElementById('game-screen'),
+  gameOver: document.getElementById('game-over-screen'),
+};
+
+const playerNameInput = document.getElementById('player-name');
+const joinCodeInput   = document.getElementById('join-code');
+const displayCode     = document.getElementById('display-code');
+const lobbyPlayers    = document.getElementById('lobby-players');
+const btnStart        = document.getElementById('btn-start');
+const waitingMsg      = document.getElementById('waiting-msg');
+
+const qCounter   = document.getElementById('q-counter');
+const qCategory  = document.getElementById('q-category');
+const timerBar   = document.getElementById('timer-bar');
+const timerCount = document.getElementById('timer-count');
+const streakDisp = document.getElementById('streak-display');
+const questionText = document.getElementById('question-text');
+const answerGrid = document.getElementById('answer-grid');
+const statusBox  = document.getElementById('status-box');
+const ansProgress = document.getElementById('answer-progress');
+const progressText = document.getElementById('progress-text');
+const progressDots = document.getElementById('progress-dots');
+const btnNext    = document.getElementById('btn-next');
+const liveLeaderboard = document.getElementById('live-leaderboard');
+const pointsPop  = document.getElementById('points-pop');
+const winnerName = document.getElementById('winner-name');
+const finalLb    = document.getElementById('final-leaderboard');
+
+// ══════════════════════════════════════════════
+//  SCREEN SWITCHER
+// ══════════════════════════════════════════════
+function showScreen(name) {
+  Object.values(screens).forEach(s => s.classList.add('hidden'));
+  screens[name].classList.remove('hidden');
+}
+
+// ══════════════════════════════════════════════
+//  WEBSOCKET
+// ══════════════════════════════════════════════
+function connectWS() {
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  ws = new WebSocket(`${proto}://${location.host}/ws`);
+
+  ws.onmessage = function(event) {
+    const msg = JSON.parse(event.data);
+    handleMessage(msg);
+  };
+
+  ws.onclose = function() {
+    setTimeout(connectWS, 2000); // auto-reconnect
+  };
+}
+
+connectWS();
+
+// ══════════════════════════════════════════════
+//  BUTTON HANDLERS
+// ══════════════════════════════════════════════
+document.getElementById('btn-create').onclick = function() {
+  myName = playerNameInput.value.trim();
+  if (!myName) return shake(playerNameInput);
+  isHost = true;
+  ws.send(JSON.stringify({ action: 'create_room', name: myName }));
+};
+
+document.getElementById('btn-join').onclick = function() {
+  myName = playerNameInput.value.trim();
+  const code = joinCodeInput.value.trim();
+  if (!myName) return shake(playerNameInput);
+  if (code.length !== 4) return shake(joinCodeInput);
+  isHost = false;
+  ws.send(JSON.stringify({ action: 'join_room', code, name: myName }));
+};
+
+btnStart.onclick = function() {
+  ws.send(JSON.stringify({ action: 'start_game', code: myRoomCode }));
+};
+
+btnNext.onclick = function() {
+  btnNext.classList.add('hidden');
+  ws.send(JSON.stringify({ action: 'next_question', code: myRoomCode }));
+};
+
+document.getElementById('btn-play-again').onclick = function() {
+  location.reload();
+};
+
+// Answer buttons
+[0,1,2,3].forEach(i => {
+  document.getElementById(`btn-${i}`).onclick = function() {
+    submitAnswer(i);
+  };
+});
+
+// ══════════════════════════════════════════════
+//  TIMER
+// ══════════════════════════════════════════════
+function startTimer(seconds) {
+  clearInterval(countdownInterval);
+  currentTimerMax = seconds;
+  let left = seconds;
+
+  timerBar.style.transition = 'none';
+  timerBar.style.width = '100%';
+  timerBar.classList.remove('danger');
+  timerCount.textContent = left;
+
+  setTimeout(() => {
+    timerBar.style.transition = `width ${seconds}s linear`;
+    timerBar.style.width = '0%';
+  }, 30);
+
+  countdownInterval = setInterval(() => {
+    left--;
+    timerCount.textContent = left;
+    if (left <= 5) {
+      timerBar.classList.add('danger');
+      if (left > 0) sfxTick();
+    }
+    if (left <= 0) {
+      clearInterval(countdownInterval);
+      submitAnswer(-1);
+    }
+  }, 1000);
+}
+
+// ══════════════════════════════════════════════
+//  SUBMIT ANSWER
+// ══════════════════════════════════════════════
+function submitAnswer(index) {
+  clearInterval(countdownInterval);
+  disableAnswerBtns();
+
+  if (index === -1) {
+    showStatus('⏰ انتهى الوقت!', 'info-bg');
+  } else {
+    showStatus('✅ تم إرسال إجابتك! في انتظار الآخرين...', 'info-bg');
+  }
+
+  ws.send(JSON.stringify({
+    action: 'submit_answer',
+    code: myRoomCode,
+    name: myName,
+    answer_index: index
+  }));
+}
+
+// ══════════════════════════════════════════════
+//  MESSAGE HANDLER
+// ══════════════════════════════════════════════
+function handleMessage(msg) {
+
+  // ── Room created ──────────────────────────────
+  if (msg.action === 'room_created') {
+    myRoomCode = msg.code;
+    displayCode.textContent = msg.code;
+    btnStart.classList.remove('hidden');
+    waitingMsg.classList.add('hidden');
+    showScreen('lobby');
+  }
+
+  // ── Join successful ───────────────────────────
+  else if (msg.action === 'join_successful') {
+    myRoomCode = msg.code;
+    myName = msg.name; // may have been deduped
+    displayCode.textContent = msg.code;
+    showScreen('lobby');
+  }
+
+  // ── Lobby update ──────────────────────────────
+  else if (msg.action === 'lobby_update') {
+    totalPlayers = msg.players.length;
+    renderLobbyPlayers(msg.players);
+  }
+
+  // ── New question ──────────────────────────────
+  else if (msg.action === 'new_question') {
+    showScreen('game');
+    myStreak = 0;
+
+    qCounter.textContent = `سؤال ${msg.question_num}/${msg.total_questions}`;
+    qCategory.textContent = msg.category || 'عام';
+
+    questionText.textContent = msg.question;
+    document.getElementById('btn-0').textContent = msg.options[0];
+    document.getElementById('btn-1').textContent = msg.options[1];
+    document.getElementById('btn-2').textContent = msg.options[2];
+    document.getElementById('btn-3').textContent = msg.options[3];
+
+    // Reset styles
+    [0,1,2,3].forEach(i => {
+      const b = document.getElementById(`btn-${i}`);
+      b.classList.remove('correct','wrong');
+      b.disabled = false;
+    });
+
+    answerGrid.classList.remove('hidden');
+    statusBox.classList.add('hidden');
+    btnNext.classList.add('hidden');
+    streakDisp.textContent = '';
+    updateAnswerProgress(0, totalPlayers);
+    ansProgress.classList.remove('hidden');
+
+    startTimer(15);
+  }
+
+  // ── Answer result ─────────────────────────────
+  else if (msg.action === 'answer_result') {
+    clearInterval(countdownInterval);
+    answerGrid.classList.remove('hidden');
+
+    const correctBtn = document.getElementById(`btn-${msg.correct_index}`);
+    correctBtn.classList.add('correct');
+
+    [0,1,2,3].forEach(i => {
+      if (i !== msg.correct_index) document.getElementById(`btn-${i}`).classList.add('wrong');
+    });
+
+    if (msg.is_correct) {
+      sfxCorrect();
+      myStreak = msg.streak;
+      let txt = `✅ إجابة صحيحة! +${msg.points_earned} نقطة`;
+      if (msg.streak_bonus > 0) txt += ` (🔥 مكافأة التسلسل +${msg.streak_bonus})`;
+      showStatus(txt, 'correct-bg');
+      showPointsPop(`+${msg.points_earned}`);
+    } else {
+      sfxWrong();
+      myStreak = 0;
+      showStatus(`❌ إجابة خاطئة!`, 'wrong-bg');
+    }
+
+    updateStreakDisplay(myStreak);
+  }
+
+  // ── Answer progress ───────────────────────────
+  else if (msg.action === 'answer_progress') {
+    updateAnswerProgress(msg.answered, msg.total);
+  }
+
+  // ── All answered → show Next btn to host ─────
+  else if (msg.action === 'all_answered') {
+    if (isHost) btnNext.classList.remove('hidden');
+  }
+
+  // ── Leaderboard ───────────────────────────────
+  else if (msg.action === 'update_leaderboard') {
+    renderLeaderboard(msg.leaderboard, liveLeaderboard, false);
+    if (isHost) btnNext.classList.remove('hidden');
+  }
+
+  // ── Game over ─────────────────────────────────
+  else if (msg.action === 'game_over') {
+    sfxGameOver();
+    clearInterval(countdownInterval);
+    if (msg.leaderboard && msg.leaderboard.length > 0) {
+      winnerName.textContent = `🥇 ${msg.leaderboard[0].name}`;
+      renderFinalLeaderboard(msg.leaderboard);
+    }
+    showScreen('gameOver');
+  }
+
+  // ── You are now host ──────────────────────────
+  else if (msg.action === 'you_are_host') {
+    isHost = true;
+    btnStart.classList.remove('hidden');
+    waitingMsg.classList.add('hidden');
+    btnNext.classList.remove('hidden');
+  }
+
+  // ── Error ─────────────────────────────────────
+  else if (msg.action === 'error') {
+    showToast(msg.message);
+  }
+}
+
+// ══════════════════════════════════════════════
+//  RENDER HELPERS
+// ══════════════════════════════════════════════
+function renderLobbyPlayers(players) {
+  lobbyPlayers.innerHTML = '';
+  players.forEach((name, i) => {
+    const li = document.createElement('li');
+    li.innerHTML = `<span>${name}</span>${i === 0 ? '<span class="host-badge">المضيف ⭐</span>' : ''}`;
+    lobbyPlayers.appendChild(li);
+    sfxJoin();
+  });
+}
+
+function renderLeaderboard(lb, el, isFinal) {
+  el.innerHTML = '';
+  const medals = ['🥇','🥈','🥉'];
+  lb.forEach((p, i) => {
+    const li = document.createElement('li');
+    const rank = medals[i] || `${i+1}.`;
+    const streak = p.streak >= 2 ? `🔥${p.streak}` : '';
+    li.innerHTML = `
+      <span class="lb-rank">${rank}</span>
+      <span class="lb-name">${p.name}</span>
+      <span class="lb-streak">${streak}</span>
+      <span class="lb-score">${p.score.toLocaleString()}</span>`;
+    el.appendChild(li);
+  });
+}
+
+function renderFinalLeaderboard(lb) {
+  finalLb.innerHTML = '';
+  const medals = ['🥇','🥈','🥉','🏅'];
+  lb.forEach((p, i) => {
+    const li = document.createElement('li');
+    li.innerHTML = `
+      <span class="medal">${medals[i] || (i+1)+'.'}</span>
+      <span style="flex:1">${p.name}</span>
+      <span class="final-score">${p.score.toLocaleString()} نقطة</span>`;
+    li.style.animationDelay = `${i * 0.12}s`;
+    finalLb.appendChild(li);
+  });
+}
+
+function updateAnswerProgress(answered, total) {
+  progressText.textContent = `أجاب ${answered}/${total}`;
+  progressDots.innerHTML = '';
+  for (let i = 0; i < total; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i < answered ? ' filled' : '');
+    progressDots.appendChild(d);
+  }
+}
+
+function updateStreakDisplay(streak) {
+  if (streak >= 3) {
+    streakDisp.textContent = '🔥'.repeat(Math.min(streak, 5)) + ` تسلسل × ${streak}`;
+  } else if (streak === 2) {
+    streakDisp.textContent = '🔥 إجابتان صحيحتان متتاليتان!';
+  } else {
+    streakDisp.textContent = '';
+  }
+}
+
+function showStatus(text, cls) {
+  statusBox.textContent = text;
+  statusBox.className = `status-box ${cls}`;
+  statusBox.classList.remove('hidden');
+}
+
+function showPointsPop(text) {
+  pointsPop.textContent = text;
+  pointsPop.classList.remove('show');
+  void pointsPop.offsetWidth; // reflow
+  pointsPop.classList.add('show');
+}
+
+function disableAnswerBtns() {
+  [0,1,2,3].forEach(i => document.getElementById(`btn-${i}`).disabled = true);
+}
+
+function shake(el) {
+  el.style.animation = 'none';
+  void el.offsetWidth;
+  el.style.animation = 'shake .4s';
+  el.focus();
+}
+
+function showToast(msg) {
+  const d = document.createElement('div');
+  d.textContent = msg;
+  Object.assign(d.style, {
+    position:'fixed', bottom:'24px', left:'50%', transform:'translateX(-50%)',
+    background:'#ff2d78cc', color:'#fff', padding:'14px 24px',
+    borderRadius:'12px', fontFamily:'Tajawal', fontWeight:'700', fontSize:'16px',
+    zIndex:'9999', backdropFilter:'blur(10px)',
+    animation:'fade-in .3s ease',
+  });
+  document.body.appendChild(d);
+  setTimeout(() => d.remove(), 3000);
+}
+
+// Shake keyframe (injected)
+const style = document.createElement('style');
+style.textContent = `@keyframes shake {
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-8px)}
+  40%{transform:translateX(8px)}
+  60%{transform:translateX(-5px)}
+  80%{transform:translateX(5px)}
+}`;
+document.head.appendChild(style);
+</script>
+</body>
+</html>
