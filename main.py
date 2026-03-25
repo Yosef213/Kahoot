@@ -26,17 +26,15 @@ QUESTIONS = [
     # رياضيات
     {"question": "كم يساوي الجذر التربيعي لـ ١٤٤؟", "options": ["١١", "١٢", "١٣", "١٤"], "correct_index": 1, "category": "رياضيات"},
     {"question": "كم يساوي ١٥ × ١٥؟", "options": ["٢٠٠", "٢١٥", "٢٢٥", "٢٣٥"], "correct_index": 2, "category": "رياضيات"},
-    {"question": "كم يساوي ٢ أس ١٠ ؟", "options": ["٥١٢", "٧٦٨", "١٠٢٤", "٢٠٤٨"], "correct_index": 2, "category": "رياضيات"},
+    {"question": "كم يساوي ٢ أس ١٠؟", "options": ["٥١٢", "٧٦٨", "١٠٢٤", "٢٠٤٨"], "correct_index": 2, "category": "رياضيات"},
 ]
 
 
-# SPEED-BASED SCORING
 def calc_score(elapsed_seconds: float) -> int:
-    """10 pts at 0s → 1 pt at 15s (linear scale)"""
+    """10 pts at 0s → 1 pt at 15s"""
     return max(1, round(10 - elapsed_seconds * (9 / 15)))
 
 
-#  BROADCAST HELPERS
 async def broadcast_lobby_update(room_code: str):
     room = rooms[room_code]
     player_names = [p["name"] for p in room["players"]]
@@ -60,7 +58,6 @@ async def send_question(room_code: str):
     room = rooms[room_code]
     idx = room["current_question_index"]
     if idx >= len(room["questions"]):
-        # Sort final leaderboard
         lb = sorted(
             [{"name": p["name"], "score": p["score"]} for p in room["players"]],
             key=lambda x: x["score"], reverse=True
@@ -85,7 +82,6 @@ async def send_question(room_code: str):
         await p["ws"].send_text(payload)
 
 
-#  ROUTES
 @app.get("/")
 async def get_home():
     return FileResponse("index.html")
@@ -99,51 +95,135 @@ async def websocket_endpoint(websocket: WebSocket):
             data = await websocket.receive_text()
             msg = json.loads(data)
 
-            #  CREATE ROOM 
+            # ── PING ─────────────────────────────────────────────
+            if msg["action"] == "ping":
+                await websocket.send_text(json.dumps({"action": "pong"}))
+                continue
+
+            # ── CREATE ROOM ──────────────────────────────────────
             if msg["action"] == "create_room":
                 code = str(random.randint(0, 9999)).zfill(4)
-                # Avoid duplicate codes
                 while code in rooms:
                     code = str(random.randint(0, 9999)).zfill(4)
 
                 host_name = msg["name"]
+                session_id = msg.get("session_id", "")
                 shuffled = random.sample(QUESTIONS, min(10, len(QUESTIONS)))
 
                 rooms[code] = {
                     "host_ws": websocket,
-                    "players": [{"name": host_name, "ws": websocket, "score": 0, "streak": 0}],
+                    "players": [{
+                        "name": host_name,
+                        "ws": websocket,
+                        "score": 0,
+                        "streak": 0,
+                        "session_id": session_id,  # FIX 1: store session_id per player
+                    }],
                     "questions": shuffled,
                     "current_question_index": 0,
                     "is_started": False,
                     "answered_players": set(),
                     "question_start_time": None,
                 }
-                await websocket.send_text(json.dumps({"action": "room_created", "code": code, "is_host": True}))
+                # FIX 5: explicitly include name in room_created response
+                await websocket.send_text(json.dumps({
+                    "action": "room_created",
+                    "code": code,
+                    "name": host_name,
+                    "is_host": True,
+                }))
                 await broadcast_lobby_update(code)
 
-            #  JOIN ROOM 
+            # ── JOIN ROOM ────────────────────────────────────────
             elif msg["action"] == "join_room":
                 code = msg["code"]
                 name = msg["name"].strip() or "لاعب"
+                session_id = msg.get("session_id", "")
 
                 if code not in rooms:
                     await websocket.send_text(json.dumps({"action": "error", "message": "رمز الغرفة غير صحيح!"}))
-                elif rooms[code]["is_started"]:
-                    await websocket.send_text(json.dumps({"action": "error", "message": "اللعبة بدأت بالفعل، لا يمكن الانضمام!"}))
+                    continue
+
+                room = rooms[code]
+
+                # FIX 1: check if this is a reconnecting player by session_id
+                reconnected_player = None
+                if session_id:
+                    for p in room["players"]:
+                        if p.get("session_id") == session_id:
+                            reconnected_player = p
+                            break
+
+                if reconnected_player:
+                    # Swap in their new websocket
+                    was_host = (room["host_ws"] == reconnected_player["ws"])
+                    reconnected_player["ws"] = websocket
+                    if was_host:
+                        room["host_ws"] = websocket
+
+                    await websocket.send_text(json.dumps({
+                        "action": "join_successful",
+                        "code": code,
+                        "name": reconnected_player["name"],
+                        "is_host": was_host,   # FIX 4: tell client if they're host
+                        "reconnected": True,
+                    }))
+
+                    # Resend current question if game is in progress
+                    if room["is_started"]:
+                        idx = room["current_question_index"]
+                        if idx < len(room["questions"]):
+                            q = room["questions"][idx]
+                            already_answered = reconnected_player["name"] in room["answered_players"]
+                            await websocket.send_text(json.dumps({
+                                "action": "new_question",
+                                "question": q["question"],
+                                "options": q["options"],
+                                "category": q.get("category", ""),
+                                "question_num": idx + 1,
+                                "total_questions": len(room["questions"]),
+                                "already_answered": already_answered,
+                            }))
+
+                    # Always resend fresh leaderboard on reconnect
+                    lb = sorted(
+                        [{"name": p["name"], "score": p["score"], "streak": p["streak"]} for p in room["players"]],
+                        key=lambda x: x["score"], reverse=True
+                    )
+                    await websocket.send_text(json.dumps({"action": "update_leaderboard", "leaderboard": lb}))
+                    await broadcast_lobby_update(code)
+
+                elif room["is_started"]:
+                    await websocket.send_text(json.dumps({
+                        "action": "error",
+                        "message": "اللعبة بدأت بالفعل، لا يمكن الانضمام!",
+                    }))
+
                 else:
-                    # Deduplicate name
-                    existing = [p["name"] for p in rooms[code]["players"]]
+                    # New player joining lobby
+                    existing = [p["name"] for p in room["players"]]
                     original = name
                     counter = 2
                     while name in existing:
                         name = f"{original}_{counter}"
                         counter += 1
 
-                    rooms[code]["players"].append({"name": name, "ws": websocket, "score": 0, "streak": 0})
-                    await websocket.send_text(json.dumps({"action": "join_successful", "code": code, "name": name}))
+                    room["players"].append({
+                        "name": name,
+                        "ws": websocket,
+                        "score": 0,
+                        "streak": 0,
+                        "session_id": session_id,
+                    })
+                    await websocket.send_text(json.dumps({
+                        "action": "join_successful",
+                        "code": code,
+                        "name": name,
+                        "is_host": False,
+                    }))
                     await broadcast_lobby_update(code)
 
-            #  START GAME 
+            # ── START GAME ───────────────────────────────────────
             elif msg["action"] == "start_game":
                 code = msg["code"]
                 if code in rooms:
@@ -151,14 +231,14 @@ async def websocket_endpoint(websocket: WebSocket):
                     rooms[code]["current_question_index"] = 0
                     await send_question(code)
 
-            #  NEXT QUESTION 
+            # ── NEXT QUESTION ────────────────────────────────────
             elif msg["action"] == "next_question":
                 code = msg["code"]
                 if code in rooms:
                     rooms[code]["current_question_index"] += 1
                     await send_question(code)
 
-            #  SUBMIT ANSWER 
+            # ── SUBMIT ANSWER ────────────────────────────────────
             elif msg["action"] == "submit_answer":
                 code = msg["code"]
                 player_name = msg["name"]
@@ -167,9 +247,13 @@ async def websocket_endpoint(websocket: WebSocket):
                 if code not in rooms:
                     continue
 
+                # FIX 7: reject any answer_index outside valid range
+                if answer_index not in range(-1, 4):
+                    continue
+
                 room = rooms[code]
 
-                #  Lock: prevent double submission
+                # Prevent double submission
                 if player_name in room["answered_players"]:
                     continue
                 room["answered_players"].add(player_name)
@@ -189,7 +273,7 @@ async def websocket_endpoint(websocket: WebSocket):
                             player["streak"] += 1
                             new_streak = player["streak"]
                             if new_streak >= 2:
-                                streak_bonus = new_streak  # +1 per streak level
+                                streak_bonus = new_streak
                                 points_earned += streak_bonus
                             player["score"] += points_earned
                         else:
@@ -210,20 +294,18 @@ async def websocket_endpoint(websocket: WebSocket):
                 answered_count = len(room["answered_players"])
                 total = len(room["players"])
 
-                progress_msg = json.dumps({
-                    "action": "answer_progress",
-                    "answered": answered_count,
-                    "total": total,
-                })
                 for p in room["players"]:
-                    await p["ws"].send_text(progress_msg)
+                    await p["ws"].send_text(json.dumps({
+                        "action": "answer_progress",
+                        "answered": answered_count,
+                        "total": total,
+                    }))
 
-                # Notify host when everyone answered
+                # FIX 2: btnNext is ONLY triggered by all_answered, never by update_leaderboard
                 if answered_count >= total:
                     await room["host_ws"].send_text(json.dumps({"action": "all_answered"}))
 
     except WebSocketDisconnect:
-        #  CLEANUP ON DISCONNECT 
         to_delete = []
         for code, room in rooms.items():
             was_host = room["host_ws"] == websocket
@@ -233,10 +315,8 @@ async def websocket_endpoint(websocket: WebSocket):
                 to_delete.append(code)
             else:
                 if was_host:
-                    # Transfer host to first remaining player
                     room["host_ws"] = room["players"][0]["ws"]
                     await room["host_ws"].send_text(json.dumps({"action": "you_are_host"}))
-                # Update lobby for remaining players
                 await broadcast_lobby_update(code)
 
         for code in to_delete:
